@@ -14,28 +14,29 @@ function PatternGrid({ level, category, setPatternGrid, setEmojiSet, next, goBac
   const [timeLeft, setTimeLeft] = useState(5);
 
   useEffect(() => {
-    // Generate pattern only once
-    let items = category === "random"
-      ? [...emojiPools.animals, ...emojiPools.flowers, ...emojiPools.objects]
-      : emojiPools[category] || emojiPools.animals;
+    const generateGrid = () => {
+      let items = category === "random"
+        ? [...emojiPools.animals, ...emojiPools.flowers, ...emojiPools.objects]
+        : emojiPools[category] || emojiPools.animals;
 
-    const selectedItems = items.slice(0, level);
-    setEmojiSet(selectedItems);
+      const selectedItems = items.slice(0, level);
+      setEmojiSet(selectedItems);
 
-    const flatGrid = Array.from({ length: totalTiles }, () =>
-      selectedItems[Math.floor(Math.random() * selectedItems.length)]
-    );
+      const flatGrid = Array.from({ length: totalTiles }, () =>
+        selectedItems[Math.floor(Math.random() * selectedItems.length)]
+      );
 
-    const structuredGrid = [];
-    for (let i = 0; i < size; i++) {
-      structuredGrid.push(flatGrid.slice(i * size, i * size + size));
-    }
+      const structuredGrid = [];
+      for (let i = 0; i < size; i++) {
+        structuredGrid.push(flatGrid.slice(i * size, i * size + size));
+      }
 
-    setGrid(structuredGrid);
-    setPatternGrid(structuredGrid);
-  }, []); // ✅ Run only once
+      setGrid(structuredGrid);
+      setPatternGrid(structuredGrid);
+    };
 
-  useEffect(() => {
+    generateGrid();
+
     const interval = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     const timeout = setTimeout(() => {
       clearInterval(interval);
@@ -46,7 +47,7 @@ function PatternGrid({ level, category, setPatternGrid, setEmojiSet, next, goBac
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  }, [next]);
+  }, [level, category, size, totalTiles, setEmojiSet, setPatternGrid, next]);
 
   return (
     <div className="screen-container">
