@@ -8,38 +8,45 @@ const emojiPools = {
 };
 
 function PatternGrid({ level, category, setPatternGrid, setEmojiSet, next, goBack, theme }) {
-  const totalTiles = level;
-  const size = Math.ceil(Math.sqrt(totalTiles));
   const [grid, setGrid] = useState([]);
   const [timeLeft, setTimeLeft] = useState(5);
 
+  const size = Math.ceil(Math.sqrt(level));
+  const totalTiles = level;
+
+  // ✅ Generate Grid Once
   useEffect(() => {
-    const generateGrid = () => {
-      let items = category === "random"
+    const items =
+      category === "random"
         ? [...emojiPools.animals, ...emojiPools.flowers, ...emojiPools.objects]
         : emojiPools[category] || emojiPools.animals;
 
-      const selectedItems = items.slice(0, level);
-      setEmojiSet(selectedItems);
+    const selected = items.slice(0, level);
+    setEmojiSet(selected);
 
-      const flatGrid = Array.from({ length: totalTiles }, () =>
-        selectedItems[Math.floor(Math.random() * selectedItems.length)]
-      );
+    const flatGrid = Array.from({ length: totalTiles }, () =>
+      selected[Math.floor(Math.random() * selected.length)]
+    );
 
-      const structuredGrid = [];
-      for (let i = 0; i < size; i++) {
-        structuredGrid.push(flatGrid.slice(i * size, i * size + size));
-      }
+    const structuredGrid = [];
+    for (let i = 0; i < size; i++) {
+      structuredGrid.push(flatGrid.slice(i * size, i * size + size));
+    }
 
-      setGrid(structuredGrid);
-      setPatternGrid(structuredGrid);
-    };
+    setGrid(structuredGrid);
+    setPatternGrid(structuredGrid);
+  }, [category, level, size, totalTiles, setEmojiSet, setPatternGrid]);
 
-    generateGrid();
+  // ✅ Start Timer and move to next phase after 5s
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) clearInterval(interval);
+        return prev - 1;
+      });
+    }, 1000);
 
-    const interval = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     const timeout = setTimeout(() => {
-      clearInterval(interval);
       next();
     }, 5000);
 
@@ -47,7 +54,7 @@ function PatternGrid({ level, category, setPatternGrid, setEmojiSet, next, goBac
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  }, [level, category, size, totalTiles, setEmojiSet, setPatternGrid, next]);
+  }, [next]);
 
   return (
     <div className="screen-container">
